@@ -31,6 +31,8 @@ void MagnectCard::init(int _sw1, int _bs, int _data, int _cp, int _strobe) {
 	pinMode(cp, INPUT_PULLUP);
 	pinMode(strobe, INPUT_PULLUP);
 }
+
+/*Default config pins to ESP32.*/
 void MagnectCard::init(void) {
 	sw1 = SW1;
 	bs = BS;
@@ -84,9 +86,9 @@ char MagnectCard::LECTOR_dato(void) {
 	unsigned char aux_p;
 	unsigned char Flag_Inicio = 0;
 
-	if (digitalRead(BS) == LOW) {
+	if (digitalRead(sw1) == LOW) {
 		delay(50);
-		while (digitalRead(BS) == LOW) {
+		while (digitalRead(bs) == LOW) {
 			delay(20);
 			yield();
 		}
@@ -96,28 +98,28 @@ char MagnectCard::LECTOR_dato(void) {
 		cntr_lector = 24;
 		for (r = 0; r < 25; r++) Lector_ID_S[r] = 0;
 		for (r = 0; r < 11; r++) Lector_ID[r] = 0;
-		setAttachInterrupt(STROBE, onPinChange, FALLING);
+		setAttachInterrupt(strobe, onPinChange, FALLING);
 		do {
 			cntr_bits = 0;
 			do {
 				Lector_ID_S[cntr_lector] = (Lector_ID_S[cntr_lector] >> 1);
 				do {
-					if (digitalRead(SW1) == HIGH) {
+					if (digitalRead(sw1) == HIGH) {
 						break;
 					}
 					//         delay(1);
 				} while (state <= 0); // Cuando hay un falling edge del strobe la bandera se pone a 1
 				state = 0;
-				if (digitalRead(DATA) == LOW) Lector_ID_S[cntr_lector] |= 0x80;
+				if (digitalRead(data) == LOW) Lector_ID_S[cntr_lector] |= 0x80;
 				else Lector_ID_S[cntr_lector] &= ~0x80;
 				cntr_bits++;
-			} while ((cntr_bits < 8) && (digitalRead(SW1) == LOW));
+			} while ((cntr_bits < 8) && (digitalRead(sw1) == LOW));
 			cntr_lector--;
 			if (cntr_lector < 0) cntr_lector = 0;
-		} while ((digitalRead(SW1) == LOW) && (cntr_lector > 0));
+		} while ((digitalRead(sw1) == LOW) && (cntr_lector > 0));
 
 		Flag_Inicio = 0;
-		detachInterrupt(STROBE);
+		detachInterrupt(strobe);
 		// Inicia busqueda del start centinel = 0x1a (con el bit de paridad)
 		cntr_lector = 0;
 
