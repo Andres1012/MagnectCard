@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map For MagnectCard
+#######################################
+
+#######################################
+# Library (KEYWORD1)
+#######################################
+
+MagnectCard	KEYWORD1	MagnectCard
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+firmwareVersion	KEYWORD2
+init	KEYWORD2
+available	KEYWORD2
+LECTOR_dato	KEYWORD2
+setAttachInterrupt	KEYWORD2
+onPinChange	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+SW1         KEYWORD2
+BS          KEYWORD2
+DATA        KEYWORD2
+CP           KEYWORD2
+STROBE       KEYWORD2
