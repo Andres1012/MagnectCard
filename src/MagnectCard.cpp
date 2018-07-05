@@ -85,16 +85,19 @@ char MagnectCard::LECTOR_dato(void) {
 	unsigned char paridad;
 	unsigned char aux_p;
 	unsigned char Flag_Inicio = 0;
+	unsigned char debounce = 0;
 
 	if (digitalRead(sw1) == LOW) {
-		delay(50);
+		delay(25);
 		while (digitalRead(bs) == LOW) {
-			delay(20);
+			delay(10);
+			Flag_Inicio = 1;
 			yield();
 		}
-		Flag_Inicio = 1;
 	}
+	
 	if (Flag_Inicio) {
+//		Serial.println("Detecto SW1");
 		cntr_lector = 24;
 		for (r = 0; r < 25; r++) Lector_ID_S[r] = 0;
 		for (r = 0; r < 11; r++) Lector_ID[r] = 0;
@@ -104,7 +107,10 @@ char MagnectCard::LECTOR_dato(void) {
 			do {
 				Lector_ID_S[cntr_lector] = (Lector_ID_S[cntr_lector] >> 1);
 				do {
-					if (digitalRead(sw1) == HIGH) {
+					debounce = digitalRead(sw1);
+					delayMicroseconds(500);
+					debounce ^= digitalRead(sw1);
+					if (digitalRead(sw1) == HIGH && debounce==0) {
 						break;
 					}
 					//         delay(1);
@@ -117,7 +123,6 @@ char MagnectCard::LECTOR_dato(void) {
 			cntr_lector--;
 			if (cntr_lector < 0) cntr_lector = 0;
 		} while ((digitalRead(sw1) == LOW) && (cntr_lector > 0));
-
 		Flag_Inicio = 0;
 		detachInterrupt(strobe);
 		// Inicia busqueda del start centinel = 0x1a (con el bit de paridad)
@@ -136,11 +141,9 @@ char MagnectCard::LECTOR_dato(void) {
 				cntr_lector++;
 			}
 			dato &= 0x1f;
-			//      if((dato == 0x1a) && (cntr_lector < 12)) dato = 0x00;
-			if ((dato == 0x1a) && (cntr_lector < 10)) dato = 0x00;
+			      if((dato == 0x1a) && (cntr_lector < 12)) dato = 0x00;
+			//if ((dato == 0x1a) && (cntr_lector < 10)) dato = 0x00;
 		} while ((cntr_lector < 25) && (dato != 0x1a));
-
-
 		// Checa el contador para determinar si la lectura fue correcta o no.
 		// Si se checaron los 25 bytes recibidos, es indicativo que no se encontro
 		// el start centinel y por lo tanto regresa un estado de tarjeta invalida
@@ -180,7 +183,6 @@ char MagnectCard::LECTOR_dato(void) {
 			}
 		} while ((cntr_lector < 25) && (dato < 10));
 		Flag_Listo = 1;
-
 			for (r = 0; r < 9; r++) {
 				if ((Lector_ID[r] <= 0x2F) || (Lector_ID[r] >= 0x3A)) // Si es uncaracter no valido regresa error.
 				{
